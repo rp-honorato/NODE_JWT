@@ -23,7 +23,7 @@ app.get('/', (req, res) => {
 app.post('/auth/register', async (req, res) => {
     const { name, email, password, confirmpassword } = req.body
 
-    // validations
+// validations
 if(!name) {
     return res.status(422).json({ msg : "O nome é obrigatório!"})
 }
@@ -36,6 +36,17 @@ if(!password) {
 if(password !== confirmpassword) {
     return res.status(422).json({ msg : "Confirme sua senha!"})
 }
+
+const userExists = await User.findOne({email: email})
+
+if (userExists) {
+    return res.status(422).json({ msg: 'Por favor, utilize outro e-mail!'})
+}
+
+//Create password
+const salt = await bcrypt.genSalt(12)
+const passwordHash = await bcrypt.hash(password, salt)
+
 })
 
 //Credendenciais
@@ -46,7 +57,7 @@ const dbPass = process.env.DB_PASS
 mongoose.connect(`mongodb+srv://${dbUser}:${dbPass}@cluster0.egfo5.mongodb.net/Cluster0?retryWrites=true&w=majority&appName=Cluster0`
 ).then(() => {
     app.listen(3000,
-        console.log("Seja bem vindo a API!")
+    console.log("API conectada com sucesso, seu endereço é => http://localhost:3000")
     )
     console.log('Conectado ao banco com sucesso!')
 }).catch((erro) => console.log(erro, "Erro ao conectar no banco!"));
